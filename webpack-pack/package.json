@@ -1,0 +1,23 @@
+{
+  "name": "webpack-pack",
+  "version": "1.0.0",
+  "main": "index.js",
+  "bin": {
+    "own-webpack": "./bin/www.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "chengyuming <yumingtarget@gmail.com> (https://github.com/cym-git)",
+  "license": "MIT",
+  "description": "",
+  "devDependencies": {
+    "@babel/generator": "^7.9.5",
+    "@babel/traverse": "^7.9.5",
+    "babylon": "^6.18.0"
+  },
+  "dependencies": {
+    "ejs": "^3.0.2"
+  }
+}
