@@ -90,6 +90,8 @@
         (function (module, exports, __webpack_require__) {
           eval(`const a = __webpack_require__("./src/a.js");
 
+__webpack_require__("./src/index.less");
+
 console.log(a);`);
         }),
     
@@ -110,6 +112,13 @@ module.exports = b + c;`);
       "./src/base/c.js":
         (function (module, exports, __webpack_require__) {
           eval(`module.exports = 'c';`);
+        }),
+    
+      "./src/index.less":
+        (function (module, exports, __webpack_require__) {
+          eval(`let style = document.createElement('style');
+style.innerHTML = "body {\\n  background-color: lightblue;\\n}\\n";
+document.head.appendChild(style);`);
         }),
     
   });

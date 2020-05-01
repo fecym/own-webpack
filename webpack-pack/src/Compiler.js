@@ -22,8 +22,37 @@ class Compiler {
     this.root = process.cwd()
     this.template = template
   }
+  // readSource(p) {
+  //   return fs.readFileSync(p, 'utf8')
+  // }
+  // 处理 loader 逻辑
   readSource(p) {
-    return fs.readFileSync(p, 'utf8')
+    let content = fs.readFileSync(p, 'utf8')
+    // 读到文件之后需要判断这个路径是不是能匹配到 loader
+    const rules = this.config.module.rules
+    for (let i = 0; i < rules.length; i++) {
+      let { test, use } = rules[i]
+      // 如果正则可以匹配到这个路径，那么我们就用相应的loader来处理
+      // 取最后一个loader
+      if (test.test(p)) {
+        // loader 内部可能有异步的情况
+        let len = use.length - 1
+        function normalLoader() {
+          const loader = use[len]
+          const fn =  require(loader)
+          console.log("Compiler -> normalLoader -> fn", fn)
+          content = fn(content)
+          if (len-- > 0) {
+            // 必须保证还有loader才继续执行
+            // 如果有loader就再次处理
+            console.log('~~~~~')
+            normalLoader()
+          }
+        }
+        normalLoader()
+      }
+    }
+    return content
   }
   parser(source, parentPath) {
     // 对 source 进行 ast 源码解析
