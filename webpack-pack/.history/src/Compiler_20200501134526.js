@@ -96,7 +96,7 @@ class Compiler {
     this.assets = {}  // 所有要输出的文件
     const filename = this.config.output.filename
     // 将要输出的文件放到 一个对像中处理
-    this.assets[filename] = renderStr   // html-webpack-plugin
+    this.assets[filename] = renderStr
     // this.assets['index.html'] = 'hello'
     const p = this.config.output.path || path.resolve('dist')
     // 最终输出结果
