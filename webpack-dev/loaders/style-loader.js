@@ -6,7 +6,7 @@ function loader(source) {
     style.innerHTML = ${JSON.stringify(source)}
     document.head.appendChild(style)
   `
-  console.log("style-loader -> code", code)
+  // console.log("style-loader -> code", code)
   return code.replace(/\\/g, '\\\\')   // "\n" => "\\n"
 }
 

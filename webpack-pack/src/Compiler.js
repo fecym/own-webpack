@@ -9,6 +9,8 @@ const traverse = require('@babel/traverse').default
 const generator = require('@babel/generator').default
 
 const template = fs.readFileSync(path.resolve(__dirname, './template.ejs'), 'utf8')
+
+const { SyncHook } = require('tapable')
 // 这个文件用来 通过配置文件进行打包的
 class Compiler {
   constructor(config) {
@@ -21,6 +23,14 @@ class Compiler {
     // 获取当前运行的命令
     this.root = process.cwd()
     this.template = template
+    this.hooks = {
+      entryOption: new SyncHook(),
+      run: new SyncHook(),
+      // 发射文件前
+      emit: new SyncHook(),
+      afterEmit: new SyncHook(),
+      done: new SyncHook()
+    }
   }
   // readSource(p) {
   //   return fs.readFileSync(p, 'utf8')
@@ -39,13 +49,13 @@ class Compiler {
         let len = use.length - 1
         function normalLoader() {
           const loader = use[len]
-          const fn =  require(loader)
-          console.log("Compiler -> normalLoader -> fn", fn)
+          const fn = require(loader)
+          // console.log("Compiler -> normalLoader -> fn", fn)
           content = fn(content)
           if (len-- > 0) {
             // 必须保证还有loader才继续执行
             // 如果有loader就再次处理
-            console.log('~~~~~')
+            // console.log('~~~~~')
             normalLoader()
           }
         }
@@ -97,22 +107,13 @@ class Compiler {
       this.entryName = relativeModulePath
     }
     // 转换我们的源代码
-    const {code,dependencies} = this.parser(source, path.dirname(relativeModulePath))
+    const { code, dependencies } = this.parser(source, path.dirname(relativeModulePath))
     // console.log("Compiler -> buildModule -> dependencies", dependencies)
     this.modules[relativeModulePath] = code
     // 加载依赖，递归收集每个模块的依赖
     dependencies.forEach(dep => {
       this.buildModule(path.join(this.root, dep))
     })
-  }
-  run() {
-    // 1. 打包 找到入口 和 所有的依赖
-    // 从入口开始
-    this.buildModule(path.join(this.root, this.entry), true)
-    console.log(this.modules);
-    // require = __webpack_require__
-    // 2. 使用模版 和 数据渲染一个打包后的文件
-    this.emit()
   }
   emit() {
     // 通过数据渲染对应的模版
@@ -134,6 +135,21 @@ class Compiler {
       // 把资源文件的内容依次写入到文件中
       fs.writeFileSync(outputPath, this.assets[filename])
     })
+  }
+  run() {
+    // 执行 run 钩子
+    this.hooks.run.call()
+    // 1. 打包 找到入口 和 所有的依赖
+    // 从入口开始
+    this.buildModule(path.join(this.root, this.entry), true)
+    // console.log(this.modules);
+    // require = __webpack_require__
+    // 2. 使用模版 和 数据渲染一个打包后的文件
+    // emit 之前调用的钩子
+    this.hooks.emit.call()
+    this.emit()
+    this.hooks.afterEmit.call()
+    this.hooks.done.call()
   }
 }
 

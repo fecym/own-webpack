@@ -7,7 +7,7 @@ function loader(source) {
   less.render(source, (err, r) => {
     css = r.css
   })
-  console.log("less-loader -> css", css)
+  // console.log("less-loader -> css", css)
   return css
 }
 
